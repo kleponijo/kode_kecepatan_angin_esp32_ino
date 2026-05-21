@@ -33,6 +33,7 @@ int   jumlahSample = 0;
 void setup() {
   Serial.begin(115200);
   delay(500);
+  randomSeed(analogRead(0));
 
   pinMode(PIN_HALL,   INPUT_PULLUP);
   pinMode(PIN_BUZZER, OUTPUT);
@@ -97,7 +98,21 @@ void loop() {
 
     float intervalDetik = gSettings.intervalRealtime / 1000.0f;
     float rps     = pulsa / intervalDetik;                    // rotasi per detik
-    float speedMS = 2.0f * PI * RADIUS_M * rps * gSettings.kFaktor;
+    float speedMS;
+
+#if ENABLE_DUMMY_DATA
+
+  // Dummy speed 0.5 - 12 m/s
+  speedMS = random(5, 120) / 10.0;
+
+  // Simulasi pulsa berdasarkan speed dummy
+  pulsa = random(1, 20);
+
+#else
+
+  speedMS = 2.0f * PI * RADIUS_M * rps * gSettings.kFaktor;
+
+#endif
 
     Serial.printf("[Main] Pulsa: %d | RPS: %.3f | Speed: %.4f m/s (k=%.1f)\n",
                   pulsa, rps, speedMS, gSettings.kFaktor);

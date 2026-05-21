@@ -20,6 +20,9 @@ const char* FB_PASSWORD = "coba123";
 #define PIN_HALL   32
 #define PIN_BUZZER 18
 
+// ── MODE TESTING ─────────────────────────────
+#define ENABLE_DUMMY_DATA true
+
 // --- Parameter Anemometer ---
 const float RADIUS_M = 0.08;  // jari-jari lengan anemometer (meter) = 8 cm
 
