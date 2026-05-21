@@ -35,7 +35,7 @@ const int            WIFI_MAX_RETRY = 10;                  // retry sebelum masu
 const unsigned long  WIFI_RETRY_DELAY = 500;               // jeda antar retry (ms)
 
 // --- OTA via GitHub Releases ---
-const char* FIRMWARE_VERSION   = "v1.0.1";         // ← ganti tiap mau update
+const char* FIRMWARE_VERSION   = "v1.0.0";         // ← ganti tiap mau update
 const char* GITHUB_USER        = "kleponijo";   // ← isi username GitHub kamu
 const char* GITHUB_REPO        = "kecepatan_angin";  // ← isi nama repo GitHub kamu
 const unsigned long OTA_CHECK_INTERVAL = 3600000UL; // cek tiap 1 jam (ms)
