@@ -24,6 +24,7 @@ const  unsigned long REINIT_COOLDOWN     = 30000UL; // coba reinit tiap 30 detik
 // ── Struct settings (nilai dari Firebase atau default) ────────
 struct SensorSettings {
   float         kFaktor          = DEFAULT_K_FAKTOR;
+  float         radiusM          = RADIUS_M; // Baca dari FireBase, fallback ke cfg_config.h
   unsigned long intervalRealtime = DEFAULT_INTERVAL_REALTIME;
   unsigned long intervalHistory  = DEFAULT_INTERVAL_HISTORY;
 };
@@ -147,6 +148,18 @@ SensorSettings fetchSettings(FirebaseData &fbdo) {
   } else {
     Serial.printf("[Settings] k_faktor gagal dibaca (%s), pakai default %.1f\n",
                   fbdo.errorReason().c_str(), s.kFaktor);
+  }
+
+  // --- radius_m ---
+  if (Firebase.RTDB.getFloat(&fbdo, "/anemometer/settings/radius_m")) {
+    float val = fbdo.floatData();
+    if (val > 0.0f && val < 1.0f) {  // sanity check: 0–1 meter masuk akal
+      s.radiusM = val;
+      Serial.printf("[Settings] radius_m = %.4f m\n", s.radiusM);
+    }
+  } else {
+    Serial.printf("[Settings] radius_m gagal dibaca, pakai default %.4f m\n",
+                  s.radiusM);
   }
 
   // --- interval_realtime_ms ---
