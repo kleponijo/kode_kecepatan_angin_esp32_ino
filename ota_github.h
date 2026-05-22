@@ -14,9 +14,10 @@
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include "cfg_config.h"
+#include "fb_firebase_helper.h"
 
 // ── Cek & jalankan OTA dari GitHub ───────────────────────────────
-void checkAndUpdateOTA() {
+void checkAndUpdateOTA(FirebaseData &fbdo) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("[OTA] WiFi tidak terhubung, skip.");
     return;
@@ -44,6 +45,8 @@ void checkAndUpdateOTA() {
 
   if (httpCode != 200) {
     Serial.printf("[OTA] Gagal cek GitHub: HTTP %d\n", httpCode);
+     // ── BARIS 40: log gagal cek GitHub ──────────────────────────
+    sendLog(fbdo, "OTA: gagal cek GitHub HTTP " + String(httpCode));
     http.end();
     return;
   }
@@ -55,13 +58,15 @@ void checkAndUpdateOTA() {
   filter["assets"][0]["name"]                     = true;
   filter["assets"][0]["browser_download_url"]     = true;
 
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(4096);
   DeserializationError err = deserializeJson(doc, http.getStream(),
                                DeserializationOption::Filter(filter));
   http.end();
 
   if (err) {
     Serial.printf("[OTA] Gagal parse JSON: %s\n", err.c_str());
+    // ── BARIS 57: log gagal parse ────────────────────────────────
+    sendLog(fbdo, "OTA: gagal parse JSON — " + String(err.c_str()));
     return;
   }
 
@@ -71,11 +76,15 @@ void checkAndUpdateOTA() {
   // ── Bandingkan versi ───────────────────────────────────────────
   if (latestTag == String(FIRMWARE_VERSION)) {
     Serial.println("[OTA] Firmware sudah terbaru. Tidak ada update.");
+     sendLog(fbdo, "OTA: firmware sudah terbaru (" + String(FIRMWARE_VERSION) + ")");
     return;
   }
 
   Serial.printf("[OTA] Update tersedia! %s → %s\n",
                 FIRMWARE_VERSION, latestTag.c_str());
+
+   // ── BARIS 71: log ada update tersedia ────────────────────────
+  sendLog(fbdo, "OTA: update tersedia " + String(FIRMWARE_VERSION) + " → " + latestTag);
 
   // ── Cari file .bin di assets ───────────────────────────────────
   String binUrl = "";
@@ -90,9 +99,13 @@ void checkAndUpdateOTA() {
   if (binUrl.isEmpty()) {
     Serial.println("[OTA] File .bin tidak ditemukan di release!");
     Serial.println("[OTA] Pastikan kamu upload file .bin saat buat release.");
+    sendLog(fbdo, "OTA: GAGAL — .bin tidak ditemukan di release " + latestTag);
     return;
   }
 
+  // ── BARIS 88: log SEBELUM flash (setelah flash ESP langsung ──
+  // ── restart, jadi log sesudah tidak akan sempat terkirim) ────
+  sendLog(fbdo, "OTA: mulai flash → " + binUrl);
   Serial.println("[OTA] Mulai download & flash...");
   Serial.println("[OTA] URL: " + binUrl);
 
@@ -111,11 +124,14 @@ void checkAndUpdateOTA() {
       Serial.printf("[OTA] GAGAL: (%d) %s\n",
                     httpUpdate.getLastError(),
                     httpUpdate.getLastErrorString().c_str());
+      sendLog(fbdo, "OTA: GAGAL flash — " + httpUpdate.getLastErrorString());
       break;
     case HTTP_UPDATE_NO_UPDATES:
       Serial.println("[OTA] Tidak ada update (server bilang sama).");
+      sendLog(fbdo, "OTA: server bilang tidak ada update");
       break;
     case HTTP_UPDATE_OK:
+     // Tidak akan pernah sampai sini karena rebootOnUpdate(true)
       Serial.println("[OTA] Berhasil! ESP akan restart...");
       break;
   }

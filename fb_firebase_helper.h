@@ -304,3 +304,30 @@ void sendHistory(FirebaseData &fbdo,
     }
   }
 }
+  // ══════════════════════════════════════════════════════════════
+//  checkRemoteCommand — cek perintah dari Firebase (Flutter app)
+//
+//  Path: /anemometer/{DEVICE_ID}/command/restart
+//    true  → ESP restart, lalu node di-reset ke false
+//    false → tidak ada aksi
+// ══════════════════════════════════════════════════════════════
+void checkRemoteCommand(FirebaseData &fbdo) {
+  String path = _basePath() + "/command/restart";
+
+  if (!Firebase.RTDB.getBool(&fbdo, path)) {
+    // Node belum ada = normal, tidak perlu log
+    return;
+  }
+
+  if (fbdo.boolData() == true) {
+    Serial.println("[CMD] Remote restart diterima dari Firebase!");
+    sendLog(fbdo, "CMD: remote restart dipicu dari app");
+
+    // Reset node dulu sebelum restart
+    Firebase.RTDB.setBool(&fbdo, path, false);
+    delay(500);
+    ESP.restart();
+  }
+}
+
+

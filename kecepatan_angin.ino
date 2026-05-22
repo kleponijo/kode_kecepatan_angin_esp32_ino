@@ -56,7 +56,7 @@ void setup() {
                    + " | H=" + String(gSettings.intervalHistory / 60000) + "m";
     sendLog(fbdo, bootMsg);
 
-    checkAndUpdateOTA(); 
+    checkAndUpdateOTA(fbdo); 
   } else {
     Serial.println("[Main] Mode AP aktif — Firebase dilewati.");
     Serial.printf( "[Main] Sambungkan HP ke hotspot \"%s\"\n", AP_SSID);
@@ -69,10 +69,19 @@ void setup() {
 void loop() {
   wifiManagerLoop();
 
-   static unsigned long lastOtaCheck = 0;
+  static unsigned long lastOtaCheck = 0;
+  static unsigned long lastCmdCheck = 0;
+  const  unsigned long CMD_CHECK_INTERVAL = 5000UL; // cek tiap 5 detik
+
   if (wifiIsConnected() && millis() - lastOtaCheck >= OTA_CHECK_INTERVAL) {
     lastOtaCheck = millis();
-    checkAndUpdateOTA();
+    checkAndUpdateOTA(fbdo);
+  }
+
+  // lalu di dalam loop(), setelah blok OTA check:
+  if (wifiIsConnected() && millis() - lastCmdCheck >= CMD_CHECK_INTERVAL) {
+  lastCmdCheck = millis();
+  checkRemoteCommand(fbdo);
   }
 
   // ── Sync settings dari Firebase tiap 5 menit ───────────────
