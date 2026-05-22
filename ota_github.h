@@ -86,6 +86,21 @@ void checkAndUpdateOTA(FirebaseData &fbdo) {
    // ── BARIS 71: log ada update tersedia ────────────────────────
   sendLog(fbdo, "OTA: update tersedia " + String(FIRMWARE_VERSION) + " → " + latestTag);
 
+  // ── Cek apakah update ini ditujukan untuk device ini ──────────
+  WiFiClientSecure checkClient;
+  checkClient.setInsecure();
+  FirebaseData fbdoCheck;
+  // Reuse fbdo yang sudah ada — cukup baca satu node
+  if (Firebase.RTDB.getString(&fbdo, "/anemometer/settings/ota_target")) {
+  String target = fbdo.stringData();
+  // "all" = update semua, atau cocokkan DEVICE_ID
+  if (target != "all" && target != String(DEVICE_ID)) {
+    Serial.printf("[OTA] Update bukan untuk device ini (%s), skip.\n", DEVICE_ID);
+    sendLog(fbdo, "OTA: skip — target=" + target + ", device=" + String(DEVICE_ID));
+    return;
+  }
+}
+
   // ── Cari file .bin di assets ───────────────────────────────────
   String binUrl = "";
   for (JsonObject asset : doc["assets"].as<JsonArray>()) {
