@@ -31,7 +31,7 @@ const unsigned long  DEFAULT_INTERVAL_HISTORY  = 3600000UL;   // 1 jam
 // --- Device Identity ---
 // Isi manual untuk tiap ESP agar path Firebase tidak tabrakan.
 // "esp_percobaan" untuk ESP indoor/test, "esp_lapangan" untuk ESP outdoor.
-const char* DEVICE_ID = "esp_percobaan"; // ← ganti ke "esp_lapangan" untuk ESP outdoor
+const char* DEVICE_ID = "esp_lapangan"; // ← ganti ke "esp_lapangan" untuk ESP outdoor
 
 // --- WiFi Manager Settings ---
 const char*          AP_SSID        = "Anemometer-Setup"; // nama hotspot captive portal
