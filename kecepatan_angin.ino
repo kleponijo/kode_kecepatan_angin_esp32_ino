@@ -23,7 +23,7 @@ void IRAM_ATTR hitungPulsa() {
 }
 
 unsigned long lastRealtime = 0;
-unsigned long lastHistory = 0;
+int lastSentHour = -1;
 
 float totalSpeed   = 0;
 float maxSpeed     = 0.0f;
@@ -120,21 +120,26 @@ void loop() {
     jumlahSample++;
   }
 
-  // ── HISTORY — push rata-rata per interval ───────────────────
-  if (millis() - lastHistory >= gSettings.intervalHistory) {
-    lastHistory = millis();
+  // ── HISTORY — push rata-rata tepat saat jam berganti ────────
+  // configTime(7*3600) → localtime() sudah WIB, jadi 07:00/08:00/dst
+  {
+  time_t    nowT = time(NULL);
+  struct tm* tNow = localtime(&nowT);
 
+  if (tNow->tm_hour != lastSentHour && lastSentHour != -1) {
+    // Jam baru → kirim akumulasi jam sebelumnya
     if (jumlahSample > 0) {
       float avgSpeed = totalSpeed / jumlahSample;
-
+      Serial.printf("[Main] History jam %02d:00 — avg=%.4f max=%.4f dari %d sample\n",
+                    lastSentHour, avgSpeed, maxSpeed, jumlahSample);
       sendHistory(fbdo, avgSpeed, maxSpeed, jumlahSample, gSettings, fbConfig);
-
-      // Reset akumulator
       totalSpeed   = 0.0f;
       maxSpeed     = 0.0f;
       jumlahSample = 0;
-    } else {
-      Serial.println("[Main] History skip — belum ada sample.");
-    }
+        } else {
+      Serial.printf("[Main] History jam %02d:00 skip — tidak ada sample.\n", lastSentHour);
+        }
+      }
+  lastSentHour = tNow->tm_hour; // update selalu
   }
 }
