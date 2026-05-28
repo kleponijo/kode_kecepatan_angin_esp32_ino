@@ -27,6 +27,7 @@ struct SensorSettings {
   float         radiusM          = RADIUS_M; // Baca dari FireBase, fallback ke cfg_config.h
   unsigned long intervalRealtime = DEFAULT_INTERVAL_REALTIME;
   unsigned long intervalHistory  = DEFAULT_INTERVAL_HISTORY;
+  int magnetCount = DEFAULT_MAGNET_COUNT;
 };
 
 // ── Device path prefix ────────────────────────────────────────
@@ -185,6 +186,19 @@ SensorSettings fetchSettings(FirebaseData &fbdo) {
     Serial.printf("[Settings] interval_history gagal dibaca, pakai default %lu ms\n",
                   s.intervalHistory);
   }
+
+  // --- magnet_count ---
+  if (Firebase.RTDB.getInt(&fbdo, "/anemometer/settings/magnet_count")) {
+    int val = fbdo.intData();
+    if (val == 1 || val == 2 || val == 3) {
+      s.magnetCount = val;
+      Serial.printf("[Settings] magnet_count = %d\n", s.magnetCount);
+    }
+  } else {
+    Serial.printf("[Settings] magnet_count gagal dibaca, pakai default %d\n",
+                  s.magnetCount);
+  }
+
 
   return s;
 }

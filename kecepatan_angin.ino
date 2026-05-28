@@ -105,7 +105,7 @@ void loop() {
     lastRealtime = millis();
 
     float intervalDetik = gSettings.intervalRealtime / 1000.0f;
-    float rps     = pulsa / intervalDetik;                    // rotasi per detik
+    float rps = pulsa / (intervalDetik * (float)gSettings.magnetCount);
     float speedMS = 2.0f * PI * gSettings.radiusM * rps * gSettings.kFaktor;
 
     Serial.printf("[Main] Pulsa: %d | RPS: %.3f | Speed: %.4f m/s (k=%.1f)\n",

@@ -27,6 +27,7 @@ const float RADIUS_M = 0.08;  // jari-jari lengan anemometer (meter) = 8 cm
 const float          DEFAULT_K_FAKTOR          = 50.0;
 const unsigned long  DEFAULT_INTERVAL_REALTIME = 1000UL;      // 1 detik
 const unsigned long  DEFAULT_INTERVAL_HISTORY  = 3600000UL;   // 1 jam
+const int DEFAULT_MAGNET_COUNT = 1;  // ← jumlah magnet pada anemometer (1 atau 3)
 
 // --- Device Identity ---
 // Isi manual untuk tiap ESP agar path Firebase tidak tabrakan.
@@ -39,7 +40,7 @@ const char*          AP_PASSWORD    = "";                  // kosong = open AP
 const int            WIFI_MAX_RETRY = 10;                  // retry sebelum masuk AP mode
 const unsigned long  WIFI_RETRY_DELAY = 500;               // jeda antar retry (ms)
 
-const char* FIRMWARE_VERSION   = "v1.0.3";         // ← ganti tiap mau update
+const char* FIRMWARE_VERSION   = "v1.0.4";         // ← ganti tiap mau update
 
 const char* GITHUB_USER        = "kleponijo";   // ← isi username GitHub kamu
 const char* GITHUB_REPO        = "kecepatan_angin";  // ← isi nama repo GitHub kamu
